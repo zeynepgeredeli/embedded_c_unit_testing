@@ -1,4 +1,6 @@
 #include "can.h"
+#include <stddef.h>
+
 
 uint8_t calculate_checksum(const CANFrame *frame) {
     uint8_t sum = 0U;
