@@ -129,6 +129,8 @@ int main() {
 
     check("Invalid fuel percentage",get_estimated_range(-1, 8), -1);
 
+    
+
 
     printf("\n=== Result: %d PASS, %d FAIL ===\n", passed, failed);
     return failed;
