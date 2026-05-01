@@ -1,0 +1,43 @@
+name: Embedded C Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install GCC
+        run: sudo apt-get install -y gcc
+
+      - name: Build and run motor tests
+        run: |
+          gcc motor.c test_motor.c -o test_motor
+          ./test_motor
+
+      - name: Build and run speed tests
+        run: |
+          gcc speed.c test_speed.c -o test_speed
+          ./test_speed
+
+      - name: Build and run fuel tests
+        run: |
+          gcc fuel.c test_fuel.c -o test_fuel
+          ./test_fuel
+
+      - name: Build and run CAN tests
+        run: |
+          gcc can.c test_can.c -o test_can
+          ./test_can
+
+      - name: Build and run DTC tests
+        run: |
+          gcc dtc.c test_dtc.c -o test_dtc
+          ./test_dtc
