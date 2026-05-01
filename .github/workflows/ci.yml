@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-and-test:
@@ -12,25 +13,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install GCC
         run: sudo apt-get install -y gcc
 
-      - name: Build and run motor tests
+      - name: Build and run all tests
         run: |
-          gcc motor.c test_motor.c -o test_motor
-          ./test_motor
-
-      - name: Build and run speed tests
-        run: |
-          gcc speed.c test_speed.c -o test_speed
-          ./test_speed
-
-      - name: Build and run fuel tests
-        run: |
-          gcc fuel.c test_fuel.c -o test_fuel
-          ./test_fuel
+          gcc motor.c speed.c fuel.c dtc.c can.c test.c -o test_runner
+          ./test_runner
 
       - name: Build and run CAN tests
         run: |
