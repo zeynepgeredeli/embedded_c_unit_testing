@@ -1,29 +1,35 @@
 #include "motor.h"
 
-// the temperature values are provided as example values 
 MotorStatus check_motor_temperature(int temperature) {
-    if (temperature < -40 || temperature > 150) {
-        return SENSOR_FAULT;
+    MotorStatus status = NORMAL;
+
+    if (temperature < -40) {
+        status = SENSOR_FAULT;
+    } else if (temperature > 150) {
+        status = SENSOR_FAULT;
+    } else if (temperature >= 120) {
+        status = EMERGENCY;
+    } else if (temperature >= 105) {
+        status = CRITICAL_WARNING;
+    } else if (temperature >= 90) {
+        status = WARNING;
+    } else {
+        status = NORMAL;
     }
-    if (temperature >= 120) {
-        return EMERGENCY;
-    }
-    if (temperature >= 105) {
-        return CRITICAL_WARNING;
-    }
-    if (temperature >= 90) {
-        return WARNING;
-    }
-    return NORMAL;
+
+    return status;
 }
 
 int apply_power_restriction(MotorStatus status) {
-    if (status == EMERGENCY) {
-        return 50; // power that goes to the motor (percentage %)
-    }
-    if (status == CRITICAL_WARNING) {
-        return 80;
-    }
-    return 100;
-}
+    int power = 100;
 
+    if (status == EMERGENCY) {
+        power = 50;
+    } else if (status == CRITICAL_WARNING) {
+        power = 80;
+    } else {
+        power = 100;
+    }
+
+    return power;
+}

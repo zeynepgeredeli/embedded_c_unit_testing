@@ -1,33 +1,37 @@
 #include "speed.h"
 
 SpeedStatus check_speed_limit(int current_speed, int speed_limit) {
-    if (current_speed < 0 || current_speed > 300) {
-        return SPEED_SENSOR_FAULT;
+    SpeedStatus status = SPEED_NORMAL;
+
+    if ((current_speed < 0) || (current_speed > 300)) {
+        status = SPEED_SENSOR_FAULT;
+    } else if (speed_limit <= 0) {
+        status = SPEED_SENSOR_FAULT;
+    } else if (current_speed >= (speed_limit + 50)) {
+        status = SPEED_CRITICAL;
+    } else if (current_speed >= (speed_limit + 20)) {
+        status = SPEED_LIMIT_EXCEEDED;
+    } else if (current_speed >= speed_limit) {
+        status = SPEED_WARNING;
+    } else {
+        status = SPEED_NORMAL;
     }
-    if (speed_limit <= 0) {
-        return SPEED_SENSOR_FAULT;
-    }
-    if (current_speed >= speed_limit + 50) {
-        return SPEED_CRITICAL;
-    }
-    if (current_speed >= speed_limit + 20) {
-        return SPEED_LIMIT_EXCEEDED;
-    }
-    if (current_speed >= speed_limit) {
-        return SPEED_WARNING;
-    }
-    return SPEED_NORMAL;
+
+    return status;
 }
 
 int apply_speed_warning(SpeedStatus status) {
+    int warning_level = 0;
+
     if (status == SPEED_CRITICAL) {
-        return 3;  // urgent audio + visual warning
+        warning_level = 3;
+    } else if (status == SPEED_LIMIT_EXCEEDED) {
+        warning_level = 2;
+    } else if (status == SPEED_WARNING) {
+        warning_level = 1;
+    } else {
+        warning_level = 0;
     }
-    if (status == SPEED_LIMIT_EXCEEDED) {
-        return 2;  // visual warning
-    }
-    if (status == SPEED_WARNING) {
-        return 1;  // soft warning
-    }
-    return 0;  // no warning
+
+    return warning_level;
 }

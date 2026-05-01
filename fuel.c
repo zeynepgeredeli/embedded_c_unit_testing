@@ -1,29 +1,37 @@
 #include "fuel.h"
 
+#define TANK_CAPACITY_LITERS  80
+
 FuelStatus check_fuel_level(int fuel_percentage) {
-    if (fuel_percentage < 0 || fuel_percentage > 100) {
-        return FUEL_SENSOR_FAULT;
+    FuelStatus status = FUEL_NORMAL;
+
+    if ((fuel_percentage < 0) || (fuel_percentage > 100)) {
+        status = FUEL_SENSOR_FAULT;
+    } else if (fuel_percentage == 0) {
+        status = FUEL_EMPTY;
+    } else if (fuel_percentage <= 10) {
+        status = FUEL_CRITICAL;
+    } else if (fuel_percentage <= 25) {
+        status = FUEL_LOW;
+    } else {
+        status = FUEL_NORMAL;
     }
-    if (fuel_percentage == 0) {
-        return FUEL_EMPTY;
-    }
-    if (fuel_percentage <= 10) {
-        return FUEL_CRITICAL;
-    }
-    if (fuel_percentage <= 25) {
-        return FUEL_LOW;
-    }
-    return FUEL_NORMAL;
+
+    return status;
 }
 
 int get_estimated_range(int fuel_percentage, int consumption_per_100km) {
-    if (fuel_percentage < 0 || fuel_percentage > 100) {
-        return -1;
+    int range = -1;
+    int fuel_liters = 0;
+
+    if ((fuel_percentage < 0) || (fuel_percentage > 100)) {
+        range = -1;
+    } else if (consumption_per_100km <= 0) {
+        range = -1;
+    } else {
+        fuel_liters = TANK_CAPACITY_LITERS * fuel_percentage / 100;
+        range = fuel_liters * 100 / consumption_per_100km;
     }
-    if (consumption_per_100km <= 0) {
-        return -1;
-    }
-    // tank capacity assumed 80 liters
-    int fuel_liters = 80 * fuel_percentage / 100;
-    return fuel_liters * 100 / consumption_per_100km;
+
+    return range;
 }

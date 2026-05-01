@@ -1,56 +1,63 @@
 #include "dtc.h"
 
 void dtc_init(DTCStorage *storage) {
-    uint8_t i;
-    storage->count = 0;
-    for (i = 0; i < DTC_MAX_STORED; i++) {
+    uint8_t i = 0U;
+
+    storage->count = 0U;
+    for (i = 0U; i < DTC_MAX_STORED; i++) {
         storage->entries[i].code = DTC_CLEARED;
-        storage->entries[i].occurrence_count = 0;
-        storage->entries[i].is_active = 0;
+        storage->entries[i].occurrence_count = 0U;
+        storage->entries[i].is_active = 0U;
     }
 }
 
 DTCStatus dtc_store(DTCStorage *storage, uint16_t code) {
-    uint8_t i;
+    DTCStatus status = DTC_OK;
+    uint8_t i = 0U;
+    uint8_t found = 0U;
 
     if (code == DTC_CLEARED) {
-        return DTC_INVALID_CODE;
-    }
+        status = DTC_INVALID_CODE;
+    } else {
+        for (i = 0U; i < storage->count; i++) {
+            if (storage->entries[i].code == code) {
+                storage->entries[i].occurrence_count++;
+                storage->entries[i].is_active = 1U;
+                status = DTC_ALREADY_EXISTS;
+                found = 1U;
+            }
+        }
 
-    // check if already exists
-    for (i = 0; i < storage->count; i++) {
-        if (storage->entries[i].code == code) {
-            storage->entries[i].occurrence_count++;
-            storage->entries[i].is_active = 1;
-            return DTC_ALREADY_EXISTS;
+        if (found == 0U) {
+            if (storage->count >= DTC_MAX_STORED) {
+                status = DTC_STORAGE_FULL;
+            } else {
+                storage->entries[storage->count].code = code;
+                storage->entries[storage->count].occurrence_count = 1U;
+                storage->entries[storage->count].is_active = 1U;
+                storage->count++;
+                status = DTC_OK;
+            }
         }
     }
 
-    // check if storage is full
-    if (storage->count >= DTC_MAX_STORED) {
-        return DTC_STORAGE_FULL;
-    }
-
-    // store new DTC
-    storage->entries[storage->count].code = code;
-    storage->entries[storage->count].occurrence_count = 1;
-    storage->entries[storage->count].is_active = 1;
-    storage->count++;
-
-    return DTC_OK;
+    return status;
 }
 
 DTCStatus dtc_clear(DTCStorage *storage, uint16_t code) {
-    uint8_t i;
-    for (i = 0; i < storage->count; i++) {
+    DTCStatus status = DTC_NOT_FOUND;
+    uint8_t i = 0U;
+
+    for (i = 0U; i < storage->count; i++) {
         if (storage->entries[i].code == code) {
-            storage->entries[i].is_active = 0;
+            storage->entries[i].is_active = 0U;
             storage->entries[i].code = DTC_CLEARED;
             storage->count--;
-            return DTC_OK;
+            status = DTC_OK;
         }
     }
-    return DTC_NOT_FOUND;
+
+    return status;
 }
 
 DTCStatus dtc_clear_all(DTCStorage *storage) {
@@ -59,14 +66,17 @@ DTCStatus dtc_clear_all(DTCStorage *storage) {
 }
 
 int dtc_is_active(const DTCStorage *storage, uint16_t code) {
-    uint8_t i;
-    for (i = 0; i < storage->count; i++) {
-        if (storage->entries[i].code == code &&
-            storage->entries[i].is_active == 1) {
-            return 1;
+    int result = 0;
+    uint8_t i = 0U;
+
+    for (i = 0U; i < storage->count; i++) {
+        if ((storage->entries[i].code == code) &&
+            (storage->entries[i].is_active == 1U)) {
+            result = 1;
         }
     }
-    return 0;
+
+    return result;
 }
 
 uint8_t dtc_get_count(const DTCStorage *storage) {
